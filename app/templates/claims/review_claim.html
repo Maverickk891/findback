@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Claim #{{ claim.id }} — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="{{ url_for('claims.received_claims') }}" class="text-muted small text-decoration-none">
+          <i class="bi bi-arrow-left"></i> Back to received claims
+        </a>
+        <span class="text-muted small">&bull;</span>
+        <span class="badge bg-light text-muted border">Claim #{{ claim.id }}</span>
+      </div>
+      <h2 class="fw-bold mb-0">Ownership Verification Protocol</h2>
+    </div>
+
+    <div>
+      <span class="badge {{ 'bg-success-subtle text-success' if claim.status == 'Approved' else ('bg-danger-subtle text-danger' if claim.status == 'Rejected' else 'bg-warning-subtle text-warning') }} fs-5 px-3 py-2">
+        Status: {{ claim.status }}
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Left: Side-by-Side Comparison -->
+    <div class="col-lg-8">
+      
+      <!-- Item Summary Card -->
+      <div class="card card-custom p-3 bg-white border shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge bg-success-subtle text-success mb-1">Found Item Reference</span>
+            <h5 class="fw-bold text-dark mb-1">{{ claim.found_name }} ({{ claim.found_category }})</h5>
+            <div class="text-muted small">Location Found: {{ claim.found_location }} &bull; Storage: {{ claim.storage_location }}</div>
+          </div>
+          <a href="{{ url_for('items.view_found', item_id=claim.found_item_id) }}" class="btn btn-outline-secondary btn-sm">View Item</a>
+        </div>
+      </div>
+
+      <!-- Comparison Box -->
+      <div class="card card-custom p-4 bg-white border shadow-sm mb-4">
+        <h5 class="fw-bold text-dark mb-4 border-bottom pb-2">
+          <i class="bi bi-fingerprint text-primary me-2"></i> Evidence Cross-Verification
+        </h5>
+
+        <div class="row g-4">
+          <!-- Secret Notes -->
+          <div class="col-md-6">
+            <div class="p-3 bg-warning-subtle rounded-3 border border-warning h-100">
+              <span class="badge bg-warning text-dark mb-2">CONFIDENTIAL GROUND TRUTH</span>
+              <h6 class="fw-bold text-dark mb-2">Finder's Privately Logged Secrets:</h6>
+              <div class="small text-dark-subtle lh-base">
+                {{ claim.private_details }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Claimant Answers -->
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border h-100">
+              <span class="badge bg-primary text-white mb-2">CLAIMANT'S SUBMITTED PROOF</span>
+              <h6 class="fw-bold text-dark mb-2">Submitted by {{ claim.claimant_name }}:</h6>
+              <div class="small text-dark lh-base">
+                {{ claim.claimant_details }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% if claim.contact_note %}
+        <div class="mt-4 p-3 bg-light rounded-3 border small">
+          <strong>Claimant Handover Availability Note:</strong> {{ claim.contact_note }}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Action Decision Form (If Pending) -->
+      {% if claim.status == 'Pending' %}
+      <div class="card card-custom p-4 bg-white border shadow-sm">
+        <h5 class="fw-bold text-dark mb-3">Verification Decision</h5>
+        <form method="POST" action="{{ url_for('claims.review_claim', claim_id=claim.id) }}">
+          <div class="mb-3">
+            <label class="form-label">Review / Handover Remarks</label>
+            <textarea name="review_notes" class="form-control" rows="2" placeholder="e.g. Details verified accurately. Can meet outside library at 3 PM, or: Distinguishing marks did not match secret proof." required></textarea>
+          </div>
+
+          <div class="d-flex gap-3">
+            <button type="submit" name="action" value="approve" class="btn btn-success fw-bold px-4 py-2">
+              <i class="bi bi-check-circle-fill me-1"></i> Approve Claim & Verify Ownership
+            </button>
+            <button type="submit" name="action" value="reject" class="btn btn-outline-danger fw-bold px-4 py-2">
+              <i class="bi bi-x-circle-fill me-1"></i> Reject Claim
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Physical Handover Completion (If Approved & Verified) -->
+      {% if claim.status == 'Approved' and claim.found_status == 'Verified' %}
+      <div class="card card-custom p-4 bg-success-subtle border-success shadow-sm">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="fw-bold text-success mb-1"><i class="bi bi-patch-check-fill me-1"></i> Item Verified! Complete Handover</h5>
+            <p class="text-dark-subtle small mb-0">Once the physical item has been handed over to {{ claim.claimant_name }}, finalize the return.</p>
+          </div>
+          <form method="POST" action="{{ url_for('claims.complete_handover', found_id=claim.found_item_id) }}" onsubmit="return confirm('Confirm that physical item has been handed over to owner?');">
+            <button type="submit" class="btn btn-success btn-lg fw-bold px-4">
+              <i class="bi bi-check2-all me-1"></i> Confirm Handover & Mark Returned
+            </button>
+          </form>
+        </div>
+      </div>
+      {% elif claim.found_status == 'Returned' %}
+      <div class="card card-custom p-4 bg-light border text-center">
+        <i class="bi bi-patch-check-fill text-success fs-1 mb-2"></i>
+        <h5 class="fw-bold text-dark mb-1">Item Officially Returned</h5>
+        <p class="text-muted small mb-0">The recovery cycle is complete and logged in university statistics.</p>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Right: Mutual Contact Information (Unlocked on Approval) -->
+    <div class="col-lg-4">
+      <div class="card card-custom p-4 bg-white border shadow-sm mb-4">
+        <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">Participant Information</h5>
+
+        <div class="mb-3">
+          <span class="text-muted small d-block">Claimant Name</span>
+          <span class="fw-semibold text-dark">{{ claim.claimant_name }}</span>
+        </div>
+
+        {% if claim.status == 'Approved' %}
+        <div class="p-3 bg-success-subtle rounded-3 border border-success mb-3">
+          <span class="text-success small fw-bold d-block mb-1"><i class="bi bi-unlock-fill me-1"></i> Claimant Contact Info (Unlocked):</span>
+          <div class="small text-dark">
+            <div><i class="bi bi-envelope me-1"></i> <a href="mailto:{{ claim.claimant_email }}">{{ claim.claimant_email }}</a></div>
+            {% if claim.claimant_phone %}
+            <div class="mt-1"><i class="bi bi-telephone me-1"></i> <a href="tel:{{ claim.claimant_phone }}">{{ claim.claimant_phone }}</a></div>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="p-3 bg-light rounded-3 text-muted small border mb-3">
+          <i class="bi bi-lock-fill me-1"></i> Claimant contact information is locked until you approve the claim.
+        </div>
+        {% endif %}
+
+        <div class="mb-3 pt-2 border-top">
+          <span class="text-muted small d-block">Finder Name</span>
+          <span class="fw-semibold text-dark">{{ claim.finder_name }}</span>
+        </div>
+
+        {% if claim.status == 'Approved' %}
+        <div class="p-3 bg-light rounded-3 small">
+          <div><i class="bi bi-envelope me-1"></i> {{ claim.finder_email }}</div>
+          {% if claim.finder_phone %}
+          <div class="mt-1"><i class="bi bi-telephone me-1"></i> {{ claim.finder_phone }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

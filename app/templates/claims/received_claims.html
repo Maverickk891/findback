@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Received Claims — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Received Ownership Claims</h2>
+      <p class="text-muted small mb-0">Review claims submitted by users claiming items you reported finding.</p>
+    </div>
+    <a href="{{ url_for('items.dashboard') }}" class="btn btn-outline-secondary btn-sm">Dashboard</a>
+  </div>
+
+  {% if claims %}
+    <div class="row g-4">
+      {% for claim in claims %}
+      <div class="col-lg-6">
+        <div class="card card-custom p-4 bg-white border shadow-sm h-100">
+          
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div>
+              <span class="badge bg-light text-muted border">Claim #{{ claim.id }}</span>
+              <span class="small text-muted ms-2">Submitted by <strong>{{ claim.claimant_name }}</strong></span>
+            </div>
+            <span class="badge {{ 'bg-success-subtle text-success' if claim.status == 'Approved' else ('bg-danger-subtle text-danger' if claim.status == 'Rejected' else 'bg-warning-subtle text-warning') }} fs-6">
+              {{ claim.status }}
+            </span>
+          </div>
+
+          <h5 class="fw-bold text-dark mb-2">{{ claim.found_name }}</h5>
+
+          <div class="mb-3">
+            <span class="text-muted small d-block mb-1">Claimant's Submitted Distinguishing Proof:</span>
+            <div class="p-3 bg-light rounded-3 text-dark small">
+              {{ claim.claimant_details }}
+            </div>
+          </div>
+
+          <div class="p-3 bg-warning-subtle rounded-3 border border-warning mb-3">
+            <span class="text-dark small fw-bold d-block mb-1">
+              <i class="bi bi-shield-lock-fill text-warning me-1"></i> Your Secret Recorded Details (Compare against above):
+            </span>
+            <span class="small text-dark-subtle">{{ claim.private_details }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+            <span class="small text-muted">{{ claim.created_at|timeago }}</span>
+            <a href="{{ url_for('claims.review_claim', claim_id=claim.id) }}" class="btn btn-primary-fb btn-sm px-3">
+              <i class="bi bi-patch-check me-1"></i> Verify & Take Action
+            </a>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="bi bi-inbox"></i></div>
+      <h5 class="fw-bold">No received claims to review</h5>
+      <p class="text-muted small">When a claimant submits ownership details for an item you found, it will appear here for your verification.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

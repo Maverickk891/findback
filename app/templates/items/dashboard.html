@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+
+  <!-- Welcome Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Hello, {{ current_user.name.split()[0] }}!</h2>
+      <p class="text-muted small mb-0">Here is an overview of your active reports, recovery status, and intelligent match alerts.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('items.report_lost') }}" class="btn btn-outline-danger btn-sm px-3">
+        <i class="bi bi-search me-1"></i> Report Lost
+      </a>
+      <a href="{{ url_for('items.report_found') }}" class="btn btn-outline-success btn-sm px-3">
+        <i class="bi bi-box-seam me-1"></i> Report Found
+      </a>
+      <a href="{{ url_for('qr.register_qr') }}" class="btn btn-primary-fb btn-sm px-3">
+        <i class="bi bi-qr-code me-1"></i> New QR Tag
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat Metric Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-medium">My Lost Reports</span>
+          <div class="stat-icon bg-danger-subtle text-danger" style="width: 38px; height: 38px; font-size: 1.1rem;">
+            <i class="bi bi-exclamation-triangle"></i>
+          </div>
+        </div>
+        <div class="fs-3 fw-bold text-dark">{{ my_lost|length }}</div>
+        <a href="{{ url_for('items.my_reports') }}" class="small text-muted text-decoration-none">View all &rarr;</a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-medium">My Found Reports</span>
+          <div class="stat-icon bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
+            <i class="bi bi-box-seam"></i>
+          </div>
+        </div>
+        <div class="fs-3 fw-bold text-dark">{{ my_found|length }}</div>
+        <a href="{{ url_for('items.my_reports') }}" class="small text-muted text-decoration-none">View all &rarr;</a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-medium">Active AI Matches</span>
+          <div class="stat-icon bg-warning-subtle text-warning" style="width: 38px; height: 38px; font-size: 1.1rem;">
+            <i class="bi bi-stars"></i>
+          </div>
+        </div>
+        <div class="fs-3 fw-bold text-dark">{{ matches_count }}</div>
+        <a href="{{ url_for('matches.view_matches') }}" class="small text-warning fw-semibold text-decoration-none">Inspect matches &rarr;</a>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-medium">Pending Claims</span>
+          <div class="stat-icon bg-info-subtle text-info" style="width: 38px; height: 38px; font-size: 1.1rem;">
+            <i class="bi bi-clipboard-check"></i>
+          </div>
+        </div>
+        <div class="fs-3 fw-bold text-dark">{{ pending_claims_received }}</div>
+        <a href="{{ url_for('claims.received_claims') }}" class="small text-muted text-decoration-none">Review claims &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI HIGH-CONFIDENCE MATCHES ALERT BOX -->
+  {% if high_matches %}
+  <div class="card card-custom p-4 mb-4 border-warning bg-warning-subtle shadow-sm">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-warning text-dark"><i class="bi bi-stars"></i> AI Match Alert</span>
+        <h5 class="fw-bold text-dark mb-0">High-Confidence Potential Matches Detected!</h5>
+      </div>
+      <a href="{{ url_for('matches.view_matches') }}" class="btn btn-warning btn-sm fw-semibold">View All Suggestions</a>
+    </div>
+    <p class="text-dark-subtle small mb-3">Our TF-IDF cosine similarity engine has discovered cross-correlations between your reports and other campus submissions.</p>
+
+    <div class="row g-3">
+      {% for match in high_matches %}
+      <div class="col-md-6">
+        <div class="card bg-white p-3 border-0 shadow-sm rounded-3">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <span class="badge bg-light text-secondary border">{{ match.category }}</span>
+              <h6 class="fw-bold text-dark mb-0 mt-1">
+                {{ match.lost_name }} &harr; {{ match.found_name }}
+              </h6>
+            </div>
+            <span class="badge bg-success-subtle text-success fs-6 fw-bold">
+              {{ match.total_score }}% Match
+            </span>
+          </div>
+          <div class="text-muted small mb-3" style="font-size: 0.825rem;">
+            <i class="bi bi-info-circle me-1"></i> {{ match.match_reasons }}
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <span class="small text-muted"><i class="bi bi-geo-alt"></i> {{ match.found_location }}</span>
+            <a href="{{ url_for('matches.match_detail', match_id=match.id) }}" class="btn btn-sm btn-primary-fb py-1">
+              Compare & Claim
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Active Reports Tables / Grids -->
+  <div class="row g-4">
+    <!-- My Lost Items -->
+    <div class="col-lg-6">
+      <div class="card card-custom h-100 p-4 border bg-white shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">My Lost Items ({{ my_lost|length }})</h5>
+          <a href="{{ url_for('items.report_lost') }}" class="btn btn-sm btn-outline-danger">+ Report Lost</a>
+        </div>
+
+        {% if my_lost %}
+          <div class="d-flex flex-column gap-3">
+            {% for item in my_lost[:4] %}
+            <div class="p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between">
+              <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="fw-bold text-dark">{{ item.item_name }}</span>
+                  <span class="badge {{ item.status|status_badge }} small">{{ item.status }}</span>
+                </div>
+                <div class="text-muted small">
+                  <i class="bi bi-geo-alt"></i> {{ item.last_seen_location }} &bull; Lost on {{ item.date_lost }}
+                </div>
+              </div>
+              <a href="{{ url_for('items.view_lost', item_id=item.id) }}" class="btn btn-sm btn-outline-secondary">
+                Details
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state py-4">
+            <i class="bi bi-check-circle text-success fs-2 mb-2 d-block"></i>
+            <h6 class="fw-bold">No active lost items</h6>
+            <p class="text-muted small mb-0">You haven't reported any lost belongings.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- My Found Items -->
+    <div class="col-lg-6">
+      <div class="card card-custom h-100 p-4 border bg-white shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Items I Found ({{ my_found|length }})</h5>
+          <a href="{{ url_for('items.report_found') }}" class="btn btn-sm btn-outline-success">+ Report Found</a>
+        </div>
+
+        {% if my_found %}
+          <div class="d-flex flex-column gap-3">
+            {% for item in my_found[:4] %}
+            <div class="p-3 border rounded-3 bg-light d-flex align-items-center justify-content-between">
+              <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="fw-bold text-dark">{{ item.item_name }}</span>
+                  <span class="badge {{ item.status|status_badge }} small">{{ item.status }}</span>
+                </div>
+                <div class="text-muted small">
+                  <i class="bi bi-geo-alt"></i> {{ item.found_location }} &bull; Found on {{ item.date_found }}
+                </div>
+              </div>
+              <a href="{{ url_for('items.view_found', item_id=item.id) }}" class="btn btn-sm btn-outline-secondary">
+                Details
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state py-4">
+            <i class="bi bi-box-seam text-muted fs-2 mb-2 d-block"></i>
+            <h6 class="fw-bold">No found items reported</h6>
+            <p class="text-muted small mb-0">If you recover something on campus, report it here to help the owner!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

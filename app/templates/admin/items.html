@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Manage All Items — FindBack Admin{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="{{ url_for('admin.dashboard') }}" class="text-muted small text-decoration-none">
+          <i class="bi bi-arrow-left"></i> Admin Dashboard
+        </a>
+        <span class="text-muted small">&bull;</span>
+        <span class="badge bg-danger-subtle text-danger">Moderation Suite</span>
+      </div>
+      <h2 class="fw-bold mb-0">Manage Reported Items</h2>
+    </div>
+  </div>
+
+  <ul class="nav nav-pills mb-4" id="adminItemsTab" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active fw-semibold" id="adm-lost-tab" data-bs-toggle="pill" data-bs-target="#tab-adm-lost" type="button">
+        <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i> Lost Items ({{ lost_items|length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link fw-semibold" id="adm-found-tab" data-bs-toggle="pill" data-bs-target="#tab-adm-found" type="button">
+        <i class="bi bi-box-seam-fill text-success me-1"></i> Found Items ({{ found_items|length }})
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="adminItemsTabContent">
+    <!-- Lost Items -->
+    <div class="tab-pane fade show active" id="tab-adm-lost">
+      <div class="card card-custom p-0 bg-white border shadow-sm overflow-hidden">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light text-muted text-uppercase">
+              <tr>
+                <th class="ps-4">ID & Item Name</th>
+                <th>Category</th>
+                <th>Reporter</th>
+                <th>Last Seen Location</th>
+                <th>Date Lost</th>
+                <th>Status</th>
+                <th class="text-end pe-4">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in lost_items %}
+              <tr>
+                <td class="ps-4">
+                  <div class="fw-bold text-dark">#{{ item.id }} {{ item.item_name }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">{{ item.color }} {% if item.brand %}&bull; {{ item.brand }}{% endif %}</div>
+                </td>
+                <td><span class="badge bg-light text-secondary border">{{ item.category }}</span></td>
+                <td>{{ item.reporter_name }}</td>
+                <td>{{ item.last_seen_location }}</td>
+                <td>{{ item.date_lost }}</td>
+                <td><span class="badge {{ item.status|status_badge }}">{{ item.status }}</span></td>
+                <td class="text-end pe-4">
+                  <a href="{{ url_for('items.view_lost', item_id=item.id) }}" class="btn btn-sm btn-outline-secondary py-1 px-2">Inspect</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Found Items -->
+    <div class="tab-pane fade" id="tab-adm-found">
+      <div class="card card-custom p-0 bg-white border shadow-sm overflow-hidden">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light text-muted text-uppercase">
+              <tr>
+                <th class="ps-4">ID & Item Name</th>
+                <th>Category</th>
+                <th>Finder</th>
+                <th>Location Found</th>
+                <th>Safekeeping</th>
+                <th>Private Details</th>
+                <th>Status</th>
+                <th class="text-end pe-4">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in found_items %}
+              <tr>
+                <td class="ps-4">
+                  <div class="fw-bold text-dark">#{{ item.id }} {{ item.item_name }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">{{ item.color }} {% if item.brand %}&bull; {{ item.brand }}{% endif %}</div>
+                </td>
+                <td><span class="badge bg-light text-secondary border">{{ item.category }}</span></td>
+                <td>{{ item.reporter_name }}</td>
+                <td>{{ item.found_location }}</td>
+                <td>{{ item.storage_location }}</td>
+                <td>
+                  <span class="badge bg-warning-subtle text-dark" title="{{ item.distinguishing_details }}">
+                    <i class="bi bi-shield-lock me-1"></i> {{ item.distinguishing_details[:20] }}...
+                  </span>
+                </td>
+                <td><span class="badge {{ item.status|status_badge }}">{{ item.status }}</span></td>
+                <td class="text-end pe-4">
+                  <a href="{{ url_for('items.view_found', item_id=item.id) }}" class="btn btn-sm btn-outline-secondary py-1 px-2">Inspect</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.item_name }} — Lost Item Details{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Lost Item #{{ item.id }}</span>
+        <span class="badge bg-light text-muted border">{{ item.category }}</span>
+      </div>
+      <h2 class="fw-bold mb-0">{{ item.item_name }}</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('items.browse') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Browse Items</a>
+      {% if matches %}
+      <a href="{{ url_for('matches.view_matches', lost_id=item.id) }}" class="btn btn-warning btn-sm fw-semibold">
+        <i class="bi bi-stars me-1"></i> View {{ matches|length }} Match Suggestions
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 5-STAGE STATUS TIMELINE STEPPER -->
+  <div class="card card-custom p-4 mb-4 border bg-white shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="fw-bold text-muted text-uppercase mb-0" style="font-size: 0.75rem; letter-spacing: 0.05em;">Recovery Progression Timeline</h6>
+      <span class="badge {{ item.status|status_badge }} px-3 py-1 fs-6">{{ item.status }}</span>
+    </div>
+
+    {% set stages = ['Reported', 'Matched', 'Claim Requested', 'Verified', 'Returned'] %}
+    {% set current_idx = stages.index(item.status) if item.status in stages else 0 %}
+
+    <div class="status-stepper position-relative my-4">
+      <div class="stepper-progress" style="width: {{ (current_idx / (stages|length - 1)) * 100 }}%;"></div>
+      {% for stage in stages %}
+        {% set stage_idx = loop.index0 %}
+        <div class="step-node {% if stage_idx < current_idx %}completed{% elif stage_idx == current_idx %}{% if stage == 'Returned' %}returned-final{% else %}active{% endif %}{% endif %}">
+          <div class="step-circle">
+            {% if stage_idx < current_idx %}
+              <i class="bi bi-check-lg"></i>
+            {% elif stage_idx == current_idx and stage == 'Returned' %}
+              <i class="bi bi-patch-check-fill"></i>
+            {% else %}
+              {{ loop.index }}
+            {% endif %}
+          </div>
+          <div class="step-label">{{ stage }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Item Details Card -->
+    <div class="col-lg-7">
+      <div class="card card-custom p-4 border bg-white shadow-sm h-100">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Item Specifications</h5>
+
+        {% if item.photo_filename %}
+        <div class="mb-4 rounded-3 overflow-hidden bg-light text-center border p-2" style="max-height: 320px;">
+          <img src="{{ url_for('items.serve_upload', subfolder='items', filename=item.photo_filename) }}" alt="{{ item.item_name }}" class="img-fluid rounded" style="max-height: 300px; object-fit: contain;">
+        </div>
+        {% endif %}
+
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Category</span>
+            <span class="fw-semibold text-dark">{{ item.category }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Colour</span>
+            <span class="fw-semibold text-dark">{{ item.color }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Brand / Make</span>
+            <span class="fw-semibold text-dark">{{ item.brand or 'Unspecified' }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Reported By</span>
+            <span class="fw-semibold text-dark">{{ item.reporter_name }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Last Seen Location</span>
+            <span class="fw-semibold text-dark"><i class="bi bi-geo-alt text-danger me-1"></i>{{ item.last_seen_location }}</span>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small d-block">Date Lost</span>
+            <span class="fw-semibold text-dark"><i class="bi bi-calendar3 me-1"></i>{{ item.date_lost }}</span>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <span class="text-muted small d-block mb-1">Description</span>
+          <div class="p-3 bg-light rounded-3 text-dark small lh-base">
+            {{ item.description }}
+          </div>
+        </div>
+
+        {% if current_user and (current_user.id == item.user_id or current_user.role == 'admin') and item.additional_identifying_info %}
+        <div class="p-3 bg-warning-subtle rounded-3 border border-warning">
+          <span class="text-dark small fw-bold d-block"><i class="bi bi-shield-lock me-1"></i> Private Identifying Notes (Only visible to you)</span>
+          <span class="small text-dark-subtle">{{ item.additional_identifying_info }}</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Status History Audit & Potential Matches -->
+    <div class="col-lg-5">
+      <!-- Status History -->
+      <div class="card card-custom p-4 border bg-white shadow-sm mb-4">
+        <h5 class="fw-bold mb-3 border-bottom pb-2">Status Audit History</h5>
+        {% if history %}
+          <div class="timeline-feed small">
+            {% for h in history %}
+            <div class="mb-3 pb-2 border-bottom">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge {{ h.new_status|status_badge }}">{{ h.new_status }}</span>
+                <span class="text-muted" style="font-size: 0.75rem;">{{ h.created_at|timeago }}</span>
+              </div>
+              <div class="text-dark">{{ h.remarks }}</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Logged by {{ h.changed_by_name }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">Initial record created.</p>
+        {% endif %}
+      </div>
+
+      <!-- Potential Matches Box -->
+      {% if matches %}
+      <div class="card card-custom p-4 border-warning bg-warning-subtle shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-stars text-warning me-1"></i> Matched Items ({{ matches|length }})</h5>
+        </div>
+        <div class="d-flex flex-column gap-2">
+          {% for m in matches[:3] %}
+          <div class="p-2 bg-white rounded-3 shadow-sm border d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold small text-dark">{{ m.found_name }}</div>
+              <div class="text-muted" style="font-size: 0.75rem;">Found at: {{ m.found_location }}</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success-subtle text-success fw-bold">{{ m.total_score }}%</span>
+              <a href="{{ url_for('matches.match_detail', match_id=m.id) }}" class="btn btn-sm btn-primary-fb py-0 px-2" style="font-size: 0.75rem;">Compare</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

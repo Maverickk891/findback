@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fs-3 fw-bold" style="width: 54px; height: 54px;">
+          {{ user.name[:1] | upper }}
+        </div>
+        <div>
+          <h3 class="fw-bold mb-0">{{ user.name }}</h3>
+          <div class="text-muted small">
+            <span>{{ user.email }}</span> &bull; 
+            <span class="badge bg-secondary-subtle text-secondary">{{ user.role|capitalize }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-custom p-4 shadow-sm border bg-white mb-4">
+        <h5 class="fw-bold mb-3">Account Details</h5>
+        <form method="POST" action="{{ url_for('auth.profile') }}">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email (Read Only)</label>
+              <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" value="{{ user.phone or '' }}" placeholder="+91 9876543210">
+            <div class="form-text small">Used to coordinate handover once an ownership claim is verified.</div>
+          </div>
+
+          <hr class="my-4">
+          <h6 class="fw-bold text-dark mb-3">Change Password (Optional)</h6>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Current Password</label>
+              <input type="password" name="current_password" class="form-control" placeholder="Enter current password">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">New Password</label>
+              <input type="password" name="new_password" class="form-control" placeholder="Enter new password">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary-fb px-4">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}AI Match Suggestions — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <span class="badge bg-warning text-dark fw-semibold px-3 py-1 rounded-pill mb-1">
+        <i class="bi bi-stars"></i> TF-IDF & Cosine Similarity Engine
+      </span>
+      <h2 class="fw-bold mb-1">Intelligent Match Suggestions</h2>
+      <p class="text-muted small mb-0">Cross-analyzed recommendations matching lost and found reports with score breakdown.</p>
+    </div>
+    <a href="{{ url_for('items.dashboard') }}" class="btn btn-outline-secondary btn-sm">Dashboard</a>
+  </div>
+
+  {% if matches %}
+    <div class="row g-4">
+      {% for m in matches %}
+      <div class="col-lg-6">
+        <div class="card card-custom p-4 bg-white border shadow-sm h-100 position-relative">
+          
+          <!-- Confidence Header -->
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-light text-muted border">Match #{{ m.id }}</span>
+              <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ m.created_at|timeago }}</span>
+            </div>
+            
+            {% if m.total_score >= 70 %}
+              <span class="match-score-badge score-high">
+                <i class="bi bi-patch-check-fill"></i> {{ m.total_score }}% Match
+              </span>
+            {% elif m.total_score >= 50 %}
+              <span class="match-score-badge score-medium">
+                <i class="bi bi-stars"></i> {{ m.total_score }}% Match
+              </span>
+            {% else %}
+              <span class="match-score-badge score-low">
+                <i class="bi bi-shield"></i> {{ m.total_score }}% Match
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Side-by-Side Quick Summary -->
+          <div class="row g-3 mb-3">
+            <!-- Lost Item Side -->
+            <div class="col-6">
+              <div class="p-3 bg-danger-subtle rounded-3 h-100">
+                <span class="badge bg-danger text-white mb-2" style="font-size: 0.7rem;">LOST ITEM</span>
+                <h6 class="fw-bold text-dark mb-1 text-truncate">{{ m.lost_name }}</h6>
+                <div class="text-muted small mb-1"><i class="bi bi-geo-alt text-danger me-1"></i>{{ m.last_seen_location }}</div>
+                <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ m.date_lost }}</div>
+              </div>
+            </div>
+
+            <!-- Found Item Side -->
+            <div class="col-6">
+              <div class="p-3 bg-success-subtle rounded-3 h-100">
+                <span class="badge bg-success text-white mb-2" style="font-size: 0.7rem;">FOUND ITEM</span>
+                <h6 class="fw-bold text-dark mb-1 text-truncate">{{ m.found_name }}</h6>
+                <div class="text-muted small mb-1"><i class="bi bi-geo-alt text-success me-1"></i>{{ m.found_location }}</div>
+                <div class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ m.date_found }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matching Reasons Tag Box -->
+          <div class="p-3 bg-light rounded-3 mb-3 small">
+            <div class="fw-bold text-dark mb-1"><i class="bi bi-cpu text-primary me-1"></i> Correlation Highlights:</div>
+            <div class="text-muted">{{ m.match_reasons }}</div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+            <form method="POST" action="{{ url_for('matches.dismiss_match', match_id=m.id) }}" class="d-inline">
+              <button type="submit" class="btn btn-link text-muted p-0 small text-decoration-none" title="Dismiss this suggestion">
+                <i class="bi bi-x-circle me-1"></i> Dismiss
+              </button>
+            </form>
+            <a href="{{ url_for('matches.match_detail', match_id=m.id) }}" class="btn btn-primary-fb btn-sm px-3">
+              Full Comparison & Action &rarr;
+            </a>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="bi bi-stars"></i></div>
+      <h5 class="fw-bold">No active matches found currently</h5>
+      <p class="text-muted small">Our algorithm automatically scans reports as new items are logged. Once a potential correlation is detected, you will be notified.</p>
+      <a href="{{ url_for('items.browse') }}" class="btn btn-outline-secondary btn-sm">Browse Public Catalog</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

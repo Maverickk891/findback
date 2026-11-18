@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Claim Item #{{ found_item.id }} — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-1 rounded-pill mb-1">
+            <i class="bi bi-shield-check me-1"></i> Ownership Verification Protocol
+          </span>
+          <h2 class="fw-bold mb-0">Claim Ownership of Item</h2>
+          <p class="text-muted small">Provide unique distinguishing details that only the true owner could know.</p>
+        </div>
+        <a href="{{ url_for('items.view_found', item_id=found_item.id) }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+      </div>
+
+      <!-- Item Reference Card -->
+      <div class="card card-custom p-3 bg-light border mb-4">
+        <div class="d-flex align-items-center gap-3">
+          {% if found_item.photo_filename %}
+            <img src="{{ url_for('items.serve_upload', subfolder='items', filename=found_item.photo_filename) }}" alt="{{ found_item.item_name }}" class="rounded object-fit-cover" style="width: 54px; height: 54px;">
+          {% else %}
+            <div class="bg-white text-success rounded border d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+              <i class="bi bi-box-seam fs-4"></i>
+            </div>
+          {% endif %}
+          <div>
+            <h5 class="fw-bold text-dark mb-1">{{ found_item.item_name }}</h5>
+            <div class="text-muted small">
+              Found at {{ found_item.found_location }} on {{ found_item.date_found }} &bull; Stored: {{ found_item.storage_location }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Claim Submission Form -->
+      <div class="card card-custom p-4 p-md-5 border bg-white shadow-sm">
+        <form method="POST" action="{{ url_for('claims.submit_claim', found_id=found_item.id) }}">
+
+          <!-- Link to user's lost report if applicable -->
+          {% if my_lost_items %}
+          <div class="mb-4">
+            <label class="form-label">Link to your Lost Item Report (Optional)</label>
+            <select name="lost_item_id" class="form-select">
+              <option value="">-- Do not link / Independent Claim --</option>
+              {% for lost in my_lost_items %}
+                <option value="{{ lost.id }}">{{ lost.item_name }} ({{ lost.category }})</option>
+              {% endfor %}
+            </select>
+            <div class="form-text small">If selected, both reports will automatically sync status upon successful verification.</div>
+          </div>
+          {% endif %}
+
+          <!-- Distinguishing Proof -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-dark">
+              Distinguishing Identifiers & Secret Proof <span class="text-danger">*</span>
+            </label>
+            <textarea name="claimant_details" class="form-control" rows="5" placeholder="Specify details that prove this belongs to you:
+1. Exact contents inside (e.g. specific IDs, cards, currency, coins, receipts).
+2. Unique marks, scratches, stickers, custom phone wallpaper, or serial number.
+3. Inner brand tag or engravings." required></textarea>
+            <div class="form-text small text-muted">
+              <strong>Security Guarantee:</strong> Your answers will be compared by the finder or campus administrator against secretly recorded notes before any handover is authorized.
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Message / Handover Availability Note</label>
+            <textarea name="contact_note" class="form-control" rows="2" placeholder="e.g. I am available between 2 PM and 5 PM near the CS Department or Library."></textarea>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{{ url_for('items.view_found', item_id=found_item.id) }}" class="btn btn-secondary-fb">Cancel</a>
+            <button type="submit" class="btn btn-primary-fb px-4">
+              <i class="bi bi-send-check me-1"></i> Submit Claim for Verification
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

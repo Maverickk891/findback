@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}You Found: {{ qr_item.item_name }} — FindBack Recovery{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+
+      <div class="card card-custom p-4 p-md-5 bg-white border shadow-md text-center mb-4">
+        <div class="brand-badge mx-auto mb-3" style="width: 50px; height: 50px; font-size: 1.5rem;">
+          <i class="bi bi-patch-check"></i>
+        </div>
+        <span class="badge bg-success-subtle text-success w-auto mx-auto mb-2 px-3 py-1 fs-6">
+          <i class="bi bi-shield-check me-1"></i> Registered Belonging Located
+        </span>
+        <h2 class="fw-bold text-dark mb-1">You Found: {{ qr_item.item_name }}</h2>
+        <span class="badge bg-light text-muted border w-auto mx-auto mb-3">{{ qr_item.category }}</span>
+
+        {% if qr_item.recovery_instructions %}
+        <div class="p-3 bg-light rounded-3 text-start small border mb-4">
+          <div class="fw-bold text-dark mb-1"><i class="bi bi-megaphone-fill text-primary me-1"></i> Owner's Message:</div>
+          <div class="text-muted">{{ qr_item.recovery_instructions }}</div>
+        </div>
+        {% endif %}
+
+        <div class="alert alert-info border-0 text-start small d-flex align-items-center gap-2 mb-4">
+          <i class="bi bi-shield-lock-fill fs-4 text-info"></i>
+          <div>
+            <strong>Privacy Protection Active:</strong> The owner's personal email and phone are hidden to protect their safety. Fill out the form below to send them an instant, private recovery message!
+          </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('qr.scan_contact', qr_uuid=qr_item.qr_code_uuid) }}" class="text-start">
+          <div class="mb-3">
+            <label class="form-label">Your Name (Optional)</label>
+            <input type="text" name="finder_name" class="form-control" placeholder="e.g. Sneha Patel">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Your Phone Number or Email <span class="text-danger">*</span></label>
+            <input type="text" name="finder_contact" class="form-control" placeholder="e.g. +91 9876543210 or sneha@campus.edu" required>
+            <div class="form-text small">The owner will use this to reach out and coordinate handover.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Where Did You Find It? / Current Location</label>
+            <input type="text" name="found_location" class="form-control" placeholder="e.g. Cafeteria Table #4 / Left at Campus Security Desk">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Message for Owner <span class="text-danger">*</span></label>
+            <textarea name="finder_message" class="form-control" rows="3" placeholder="e.g. Hi, I found your laptop in the library. I have kept it safely with me / handed it to the librarian." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary-fb w-100 py-2">
+            <i class="bi bi-send-fill me-1"></i> Send Message to Owner
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

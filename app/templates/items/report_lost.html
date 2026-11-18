@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Report Lost Item — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-9">
+      
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <span class="badge bg-danger-subtle text-danger fw-semibold px-3 py-1 rounded-pill mb-1">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Recovery Request
+          </span>
+          <h2 class="fw-bold mb-0">Report a Lost Item</h2>
+          <p class="text-muted small">Our AI matching engine will immediately scan existing found reports and notify you of matches.</p>
+        </div>
+        <a href="{{ url_for('items.dashboard') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+      </div>
+
+      <div class="card card-custom p-4 p-md-5 border bg-white shadow-sm">
+        <form method="POST" action="{{ url_for('items.report_lost') }}" enctype="multipart/form-data">
+          
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="form-label">Item Name / Headline <span class="text-danger">*</span></label>
+              <input type="text" name="item_name" class="form-control" placeholder="e.g. Black Leather Tommy Hilfiger Wallet" required autofocus>
+              <div class="form-text small">Be descriptive with key nouns.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Category <span class="text-danger">*</span></label>
+              <select name="category" class="form-select" required>
+                <option value="" disabled selected>Select category...</option>
+                {% for cat in categories %}
+                  <option value="{{ cat }}">{{ cat }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Detailed Description <span class="text-danger">*</span></label>
+            <textarea name="description" class="form-control" rows="4" placeholder="Describe the item in detail: material, wear and tear, stickers, engravings, contents, etc. The more details you provide, the higher the AI match accuracy!" required></textarea>
+            <div class="form-text small">This description is preprocessed with TF-IDF for cosine similarity matching against found items.</div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Primary Colour <span class="text-danger">*</span></label>
+              <input type="text" name="color" class="form-control" placeholder="e.g. Matte Black / Navy Blue" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Brand / Manufacturer (Optional)</label>
+              <input type="text" name="brand" class="form-control" placeholder="e.g. Apple, Dell, Titan, Wildcraft">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Last Seen Location <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-geo-alt"></i></span>
+                <input type="text" name="last_seen_location" class="form-control" placeholder="e.g. Central Library 2nd Floor Reading Room" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Date Lost <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar3"></i></span>
+                <input type="date" name="date_lost" class="form-control" value="{{ today }}" max="{{ today }}" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photograph Upload with Preview -->
+          <div class="mb-4 p-3 bg-light rounded-3 border">
+            <label class="form-label fw-bold"><i class="bi bi-camera me-1"></i> Upload Item Photograph (Optional)</label>
+            <input type="file" name="photo" id="photoInput" class="form-control" accept="image/*">
+            <div class="form-text small">Helps confirm visual identity. Allowed: JPG, PNG, WEBP.</div>
+            
+            <div id="photoPreviewContainer" class="mt-3 text-center d-none">
+              <img id="photoPreview" src="#" alt="Preview" class="rounded shadow-sm border" style="max-height: 180px; max-width: 100%;">
+            </div>
+          </div>
+
+          <!-- Additional Identifying Information -->
+          <div class="mb-4">
+            <label class="form-label">Private Identifying Notes (Optional)</label>
+            <input type="text" name="additional_identifying_info" class="form-control" placeholder="e.g. ID card inside ending in 4921, secret sticker under battery flap">
+            <div class="form-text small">Stored securely for your personal reference during claim verification.</div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <a href="{{ url_for('items.dashboard') }}" class="btn btn-secondary-fb">Cancel</a>
+            <button type="submit" class="btn btn-primary-fb px-4">
+              <i class="bi bi-check-lg me-1"></i> Submit Report & Match
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

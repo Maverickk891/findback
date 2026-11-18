@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FindBack{% endblock %} — Smart Object Recovery Network</title>
+  
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom FindBack Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  
+  <!-- Chart.js (for analytics) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+      <a class="brand-logo" href="{{ url_for('items.index') }}">
+        <div class="brand-badge">
+          <i class="bi bi-radar"></i>
+        </div>
+        <span>Find<span class="highlight">Back</span></span>
+      </a>
+      
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'items.browse' %}active{% endif %}" href="{{ url_for('items.browse') }}">
+              <i class="bi bi-search me-1"></i> Browse Items
+            </a>
+          </li>
+          {% if current_user %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'items.dashboard' %}active{% endif %}" href="{{ url_for('items.dashboard') }}">
+              <i class="bi bi-grid-1x2 me-1"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'matches.view_matches' %}active{% endif %}" href="{{ url_for('matches.view_matches') }}">
+              <i class="bi bi-stars me-1 text-warning"></i> AI Matches
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-folder2-open me-1"></i> My Activity
+            </a>
+            <ul class="dropdown-menu border-0 shadow-sm">
+              <li><a class="dropdown-item" href="{{ url_for('items.my_reports') }}"><i class="bi bi-journal-text me-2"></i>My Reports</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('claims.my_claims') }}"><i class="bi bi-check2-circle me-2"></i>My Claims</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('claims.received_claims') }}"><i class="bi bi-inbox me-2"></i>Received Claims</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('qr.my_codes') }}"><i class="bi bi-qr-code me-2"></i>Registered Belongings (QR)</a></li>
+            </ul>
+          </li>
+          {% if current_user.role == 'admin' %}
+          <li class="nav-item">
+            <a class="nav-link text-primary fw-bold" href="{{ url_for('admin.dashboard') }}">
+              <i class="bi bi-shield-check me-1"></i> Admin Panel
+            </a>
+          </li>
+          {% endif %}
+          {% endif %}
+        </ul>
+
+        <!-- Right Side Nav Actions -->
+        <div class="d-flex align-items-center gap-2">
+          {% if current_user %}
+            <!-- Quick Report Dropdown -->
+            <div class="dropdown">
+              <button class="btn btn-primary-fb btn-sm dropdown-toggle d-flex align-items-center gap-1" data-bs-toggle="dropdown">
+                <i class="bi bi-plus-circle"></i> Report Item
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end border-0 shadow-md">
+                <li>
+                  <a class="dropdown-item py-2" href="{{ url_for('items.report_lost') }}">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                    <strong>Report Lost Item</strong>
+                    <div class="text-muted small">I lost something on campus</div>
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item py-2" href="{{ url_for('items.report_found') }}">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <strong>Report Found Item</strong>
+                    <div class="text-muted small">I recovered an item</div>
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item py-2" href="{{ url_for('qr.register_qr') }}">
+                    <i class="bi bi-qr-code-scan text-primary me-2"></i>
+                    <strong>Register Belonging (QR)</strong>
+                    <div class="text-muted small">Preventive tag for your gadget</div>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <!-- In-App Notification Bell -->
+            <div class="dropdown">
+              <button class="btn btn-light position-relative p-2 rounded-circle border" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bell text-secondary"></i>
+                {% if unread_notifs > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" id="notifBadge">
+                  <span class="visually-hidden">New alerts</span>
+                </span>
+                {% endif %}
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end p-2 border-0 shadow-lg" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                <li class="d-flex justify-content-between align-items-center px-2 py-1 mb-2 border-bottom">
+                  <h6 class="mb-0 fw-bold">Notifications</h6>
+                  <span class="badge bg-primary-subtle text-primary">{{ unread_notifs }} new</span>
+                </li>
+                {% if notifications %}
+                  {% for notif in notifications %}
+                  <li class="mb-1">
+                    <a class="dropdown-item rounded p-2 text-wrap {% if not notif.is_read %}bg-light{% endif %}" href="{{ notif.link or '#' }}">
+                      <div class="fw-bold small text-dark">{{ notif.title }}</div>
+                      <div class="text-muted small">{{ notif.message }}</div>
+                      <div class="text-muted" style="font-size: 0.7rem;">{{ notif.created_at|timeago }}</div>
+                    </a>
+                  </li>
+                  {% endfor %}
+                {% else %}
+                  <li class="text-center text-muted py-3 small">No notifications yet</li>
+                {% endif %}
+              </ul>
+            </div>
+
+            <!-- User Avatar & Profile Dropdown -->
+            <div class="dropdown">
+              <button class="btn btn-light d-flex align-items-center gap-2 border rounded-pill py-1 px-2" data-bs-toggle="dropdown">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.85rem;">
+                  {{ current_user.name[:1] | upper }}
+                </div>
+                <span class="d-none d-md-inline small fw-semibold">{{ current_user.name.split()[0] }}</span>
+                <i class="bi bi-chevron-down small text-muted"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end border-0 shadow-md">
+                <li class="px-3 py-2 border-bottom">
+                  <div class="fw-bold text-dark">{{ current_user.name }}</div>
+                  <div class="text-muted small">{{ current_user.email }}</div>
+                  {% if current_user.role == 'admin' %}
+                  <span class="badge bg-danger-subtle text-danger mt-1">Administrator</span>
+                  {% else %}
+                  <span class="badge bg-primary-subtle text-primary mt-1">Student / Member</span>
+                  {% endif %}
+                </li>
+                <li><a class="dropdown-item py-2" href="{{ url_for('auth.profile') }}"><i class="bi bi-person me-2"></i>My Profile</a></li>
+                <li><a class="dropdown-item py-2" href="{{ url_for('items.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>My Dashboard</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item py-2 text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+              </ul>
+            </div>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-sm px-3 fw-semibold">Sign In</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary-fb btn-sm px-3">Get Started</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages Alert Bar -->
+  <div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2" role="alert">
+            {% if category == 'success' %}
+              <i class="bi bi-check-circle-fill fs-5"></i>
+            {% elif category == 'danger' %}
+              <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+            {% elif category == 'warning' %}
+              <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            {% else %}
+              <i class="bi bi-info-circle-fill fs-5"></i>
+            {% endif %}
+            <div class="flex-grow-1">{{ message }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main View Content -->
+  <main class="py-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer-custom">
+    <div class="container">
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+          <div class="brand-logo mb-2">
+            <div class="brand-badge" style="width: 24px; height: 24px; font-size: 0.75rem;">
+              <i class="bi bi-radar"></i>
+            </div>
+            <span>Find<span class="highlight">Back</span></span>
+          </div>
+          <p class="text-muted small pe-lg-4">
+            Next-generation lost & found and object recovery platform powered by TF-IDF natural language matching, privacy-first ownership verification, and smart QR identification.
+          </p>
+          <div class="small text-muted">
+            <span class="badge bg-secondary-subtle text-secondary me-1">AI & Data Science Mini-Project</span>
+            <span class="badge bg-success-subtle text-success">5th Sem Engineering</span>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-2">
+          <h6 class="fw-bold mb-3">Quick Links</h6>
+          <ul class="list-unstyled small mb-0 d-flex flex-column gap-2">
+            <li><a href="{{ url_for('items.browse') }}" class="text-decoration-none text-muted">Browse Items</a></li>
+            <li><a href="{{ url_for('items.report_lost') }}" class="text-decoration-none text-muted">Report Lost Item</a></li>
+            <li><a href="{{ url_for('items.report_found') }}" class="text-decoration-none text-muted">Report Found Item</a></li>
+            <li><a href="{{ url_for('qr.register_qr') }}" class="text-decoration-none text-muted">Register Belonging (QR)</a></li>
+          </ul>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <h6 class="fw-bold mb-3">Matching Architecture</h6>
+          <ul class="list-unstyled small mb-0 d-flex flex-column gap-1 text-muted">
+            <li><i class="bi bi-check2 text-primary me-1"></i> TF-IDF & Cosine Similarity (50%)</li>
+            <li><i class="bi bi-check2 text-primary me-1"></i> Category Alignment (20%)</li>
+            <li><i class="bi bi-check2 text-primary me-1"></i> Location Context Mapping (20%)</li>
+            <li><i class="bi bi-check2 text-primary me-1"></i> Date Proximity Analysis (10%)</li>
+          </ul>
+        </div>
+
+        <div class="col-lg-3">
+          <h6 class="fw-bold mb-3">Security & Privacy</h6>
+          <p class="small text-muted mb-2">
+            Distinguishing details and personal contact information remain hidden until claim verification is confirmed.
+          </p>
+          <div class="text-muted small">
+            <i class="bi bi-shield-lock-fill text-success me-1"></i> Secure Role-Based Access Control
+          </div>
+        </div>
+      </div>
+
+      <div class="border-top pt-3 d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small">
+        <div>&copy; {{ now.year }} FindBack Recovery System. Built with Python, Flask, scikit-learn & Bootstrap.</div>
+        <div class="mt-2 mt-md-0">
+          <span class="badge bg-light text-secondary border">Local Campus Deployment</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5.3 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Main Custom JS -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

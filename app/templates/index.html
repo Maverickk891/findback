@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}FindBack — Smart Object Recovery Network{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- HERO SECTION -->
+  <div class="row align-items-center py-5 g-5">
+    <div class="col-lg-7">
+      <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-primary-subtle text-primary border border-primary-subtle small fw-semibold">
+        <i class="bi bi-stars"></i> Intelligent TF-IDF Cosine Similarity Matching
+      </div>
+      <h1 class="display-4 fw-extrabold text-dark lh-tight mb-3">
+        Lost something? <br>
+        We make recovery <span class="text-primary">fast & verified</span>.
+      </h1>
+      <p class="lead text-muted mb-4 pe-lg-4">
+        FindBack connects campus finders and owners with automated AI-assisted matching, private ownership verification, and smart recovery QR codes.
+      </p>
+
+      <!-- Quick Action Buttons -->
+      <div class="d-flex flex-wrap gap-3 mb-4">
+        <a href="{{ url_for('items.report_lost') }}" class="btn btn-primary-fb btn-lg px-4 d-inline-flex align-items-center gap-2">
+          <i class="bi bi-search"></i> I Lost Something
+        </a>
+        <a href="{{ url_for('items.report_found') }}" class="btn btn-secondary-fb btn-lg px-4 d-inline-flex align-items-center gap-2">
+          <i class="bi bi-box-seam"></i> I Found Something
+        </a>
+      </div>
+
+      <!-- Quick Search Form -->
+      <form action="{{ url_for('items.browse') }}" method="GET" class="card card-custom p-2 shadow-sm border">
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-0 text-muted">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" name="q" class="form-control border-0 shadow-none" placeholder="Search lost wallets, keys, ID cards, laptops, AirPods...">
+          <button type="submit" class="btn btn-primary-fb px-4">Search Catalog</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Hero Visual / Stat Showcase -->
+    <div class="col-lg-5">
+      <div class="card card-custom p-4 shadow-lg border-0 bg-white position-relative">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="fw-bold text-dark">Live System Statistics</div>
+          <span class="badge bg-success-subtle text-success d-flex align-items-center gap-1">
+            <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;"></span> Live
+          </span>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="p-3 bg-light rounded-3">
+              <div class="text-muted small fw-medium">Items Reported</div>
+              <div class="fs-3 fw-bold text-dark">{{ total_lost + total_found }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 bg-success-subtle rounded-3">
+              <div class="text-success small fw-medium">Successfully Returned</div>
+              <div class="fs-3 fw-bold text-success">{{ total_returned }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 bg-primary-subtle rounded-3">
+              <div class="text-primary small fw-medium">Recovery Rate</div>
+              <div class="fs-3 fw-bold text-primary">{{ recovery_rate }}%</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 bg-light rounded-3">
+              <div class="text-muted small fw-medium">Active Community</div>
+              <div class="fs-3 fw-bold text-dark">{{ total_users }} Users</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-top">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stat-icon bg-warning-subtle text-warning">
+              <i class="bi bi-shield-check fs-4"></i>
+            </div>
+            <div>
+              <div class="fw-bold small text-dark">Privacy-Guaranteed Handover</div>
+              <div class="text-muted small">Identifying marks stay private until claim verification</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW FINDBACK WORKS (4-STAGE PROCESS) -->
+  <div class="py-5">
+    <div class="text-center max-w-700 mx-auto mb-5">
+      <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-1 rounded-pill mb-2">Engineered Recovery Workflow</span>
+      <h2 class="fw-bold">How FindBack Operates</h2>
+      <p class="text-muted">A structured 4-step framework bridging report submission to successful item return.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="card card-custom h-100 p-4 border text-center">
+          <div class="stat-icon bg-primary-subtle text-primary mx-auto mb-3">
+            <i class="bi bi-file-earmark-plus"></i>
+          </div>
+          <div class="badge bg-light text-muted w-auto mx-auto mb-2">Stage 1</div>
+          <h5 class="fw-bold">Report Item</h5>
+          <p class="text-muted small mb-0">
+            Submit item details, date, category, and optional photographs. Distinguishing identifiers remain concealed.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card card-custom h-100 p-4 border text-center">
+          <div class="stat-icon bg-warning-subtle text-warning mx-auto mb-3">
+            <i class="bi bi-cpu"></i>
+          </div>
+          <div class="badge bg-light text-muted w-auto mx-auto mb-2">Stage 2</div>
+          <h5 class="fw-bold">Intelligent Match</h5>
+          <p class="text-muted small mb-0">
+            TF-IDF vectorization and cosine similarity evaluate description (50%), category (20%), location (20%), and date (10%).
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card card-custom h-100 p-4 border text-center">
+          <div class="stat-icon bg-info-subtle text-info mx-auto mb-3">
+            <i class="bi bi-fingerprint"></i>
+          </div>
+          <div class="badge bg-light text-muted w-auto mx-auto mb-2">Stage 3</div>
+          <h5 class="fw-bold">Verify Ownership</h5>
+          <p class="text-muted small mb-0">
+            Claimants provide distinguishing proof. Finders or admins cross-verify secretly recorded markers before approval.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card card-custom h-100 p-4 border text-center">
+          <div class="stat-icon bg-success-subtle text-success mx-auto mb-3">
+            <i class="bi bi-check2-all"></i>
+          </div>
+          <div class="badge bg-light text-muted w-auto mx-auto mb-2">Stage 4</div>
+          <h5 class="fw-bold">Secure Handover</h5>
+          <p class="text-muted small mb-0">
+            Contact information is safely unlocked. Handover is completed and the item's status updates to Returned on the timeline.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR CODE FEATURE CALLOUT -->
+  <div class="card card-custom p-4 p-lg-5 my-4 bg-dark text-white border-0 shadow-lg position-relative overflow-hidden">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <span class="badge bg-primary px-3 py-1 rounded-pill mb-3">Pre-Loss Protection</span>
+        <h3 class="fw-bold text-white mb-3">Prevent Loss with FindBack Smart QR Tags</h3>
+        <p class="text-light opacity-75 mb-4">
+          Register your laptop, wallet, keys, or student ID beforehand. Attach the generated QR sticker. If you misplace it, any finder can scan it to send you an anonymous notification without ever seeing your phone number or email!
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('qr.register_qr') }}" class="btn btn-primary-fb">
+            <i class="bi bi-qr-code me-1"></i> Register My Belongings
+          </a>
+          <a href="{{ url_for('items.browse') }}" class="btn btn-outline-light">
+            Browse All Items
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-4 text-center">
+        <div class="p-3 bg-white rounded-3 d-inline-block shadow">
+          <i class="bi bi-qr-code text-dark" style="font-size: 8rem; line-height: 1;"></i>
+          <div class="text-dark small fw-bold mt-2">Scan & Return Anonymously</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ITEMS FEED -->
+  <div class="py-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-1 rounded-pill mb-1">Live Feed</span>
+        <h3 class="fw-bold mb-0">Recently Reported on Campus</h3>
+      </div>
+      <a href="{{ url_for('items.browse') }}" class="btn btn-outline-secondary btn-sm">View All Items <i class="bi bi-arrow-right"></i></a>
+    </div>
+
+    <!-- Nav Tabs for Lost vs Found -->
+    <ul class="nav nav-pills mb-4" id="recentTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-semibold" id="found-tab" data-bs-toggle="pill" data-bs-target="#tab-found" type="button">
+          <i class="bi bi-box-seam text-success me-1"></i> Recently Found ({{ recent_found|length }})
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link fw-semibold" id="lost-tab" data-bs-toggle="pill" data-bs-target="#tab-lost" type="button">
+          <i class="bi bi-exclamation-triangle text-danger me-1"></i> Recently Lost ({{ recent_lost|length }})
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="recentTabContent">
+      <!-- Found Items Tab -->
+      <div class="tab-pane fade show active" id="tab-found">
+        <div class="row g-4">
+          {% if recent_found %}
+            {% for item in recent_found %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card card-custom card-custom-hover h-100 p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Found</span>
+                  <span class="badge bg-light text-muted border">{{ item.category }}</span>
+                </div>
+                {% if item.photo_filename %}
+                <div class="rounded-3 overflow-hidden mb-3 bg-light text-center" style="height: 160px;">
+                  <img src="{{ url_for('items.serve_upload', subfolder='items', filename=item.photo_filename) }}" alt="{{ item.item_name }}" class="w-100 h-100 object-fit-cover">
+                </div>
+                {% else %}
+                <div class="rounded-3 mb-3 bg-light d-flex align-items-center justify-content-center text-muted" style="height: 120px;">
+                  <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                </div>
+                {% endif %}
+                <h5 class="fw-bold mb-1 text-dark">{{ item.item_name }}</h5>
+                <div class="text-muted small mb-2">
+                  <i class="bi bi-geo-alt me-1 text-danger"></i> {{ item.found_location }}
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top small text-muted">
+                  <span><i class="bi bi-calendar3 me-1"></i> {{ item.date_found }}</span>
+                  <a href="{{ url_for('items.view_found', item_id=item.id) }}" class="btn btn-sm btn-outline-primary">View & Claim</a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="col-12">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-box-seam"></i></div>
+                <h5>No found items reported recently</h5>
+                <p class="text-muted small">Be the first to report a recovered item.</p>
+                <a href="{{ url_for('items.report_found') }}" class="btn btn-primary-fb btn-sm">Report Found Item</a>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Lost Items Tab -->
+      <div class="tab-pane fade" id="tab-lost">
+        <div class="row g-4">
+          {% if recent_lost %}
+            {% for item in recent_lost %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card card-custom card-custom-hover h-100 p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-circle me-1"></i>Lost</span>
+                  <span class="badge bg-light text-muted border">{{ item.category }}</span>
+                </div>
+                {% if item.photo_filename %}
+                <div class="rounded-3 overflow-hidden mb-3 bg-light text-center" style="height: 160px;">
+                  <img src="{{ url_for('items.serve_upload', subfolder='items', filename=item.photo_filename) }}" alt="{{ item.item_name }}" class="w-100 h-100 object-fit-cover">
+                </div>
+                {% else %}
+                <div class="rounded-3 mb-3 bg-light d-flex align-items-center justify-content-center text-muted" style="height: 120px;">
+                  <i class="bi bi-search fs-1 opacity-50"></i>
+                </div>
+                {% endif %}
+                <h5 class="fw-bold mb-1 text-dark">{{ item.item_name }}</h5>
+                <div class="text-muted small mb-2">
+                  <i class="bi bi-geo-alt me-1 text-danger"></i> {{ item.last_seen_location }}
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top small text-muted">
+                  <span><i class="bi bi-calendar3 me-1"></i> {{ item.date_lost }}</span>
+                  <a href="{{ url_for('items.view_lost', item_id=item.id) }}" class="btn btn-sm btn-outline-danger">Details</a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="col-12">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="bi bi-search"></i></div>
+                <h5>No lost items reported currently</h5>
+                <p class="text-muted small">Everything is accounted for!</p>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

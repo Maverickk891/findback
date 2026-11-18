@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}My Submitted Claims — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">My Submitted Claims</h2>
+      <p class="text-muted small mb-0">Track the verification status of claims you submitted for found items.</p>
+    </div>
+    <a href="{{ url_for('items.dashboard') }}" class="btn btn-outline-secondary btn-sm">Dashboard</a>
+  </div>
+
+  {% if claims %}
+    <div class="row g-4">
+      {% for claim in claims %}
+      <div class="col-lg-6">
+        <div class="card card-custom p-4 bg-white border shadow-sm h-100">
+          
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <span class="badge bg-light text-muted border">Claim #{{ claim.id }}</span>
+            {% if claim.status == 'Approved' %}
+              <span class="badge bg-success-subtle text-success fs-6"><i class="bi bi-check-circle-fill me-1"></i>Approved & Verified</span>
+            {% elif claim.status == 'Rejected' %}
+              <span class="badge bg-danger-subtle text-danger fs-6"><i class="bi bi-x-circle-fill me-1"></i>Rejected</span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning fs-6"><i class="bi bi-hourglass-split me-1"></i>Pending Review</span>
+            {% endif %}
+          </div>
+
+          <div class="d-flex align-items-center gap-3 mb-3">
+            {% if claim.found_photo %}
+              <img src="{{ url_for('items.serve_upload', subfolder='items', filename=claim.found_photo) }}" alt="{{ claim.found_name }}" class="rounded object-fit-cover" style="width: 50px; height: 50px;">
+            {% else %}
+              <div class="bg-light text-success rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                <i class="bi bi-box-seam fs-4"></i>
+              </div>
+            {% endif %}
+            <div>
+              <h5 class="fw-bold text-dark mb-0">{{ claim.found_name }}</h5>
+              <div class="text-muted small">Location: {{ claim.found_location }} &bull; Stored: {{ claim.storage_location }}</div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <span class="text-muted small d-block mb-1">Your Submitted Distinguishing Proof:</span>
+            <div class="p-3 bg-light rounded-3 text-dark small">
+              {{ claim.claimant_details }}
+            </div>
+          </div>
+
+          <!-- Unlocked Finder Contact when Claim is Approved! -->
+          {% if claim.status == 'Approved' %}
+          <div class="p-3 bg-success-subtle rounded-3 border border-success mb-3">
+            <div class="fw-bold text-success mb-1"><i class="bi bi-unlock-fill me-1"></i> Handover Authorized! Finder Contact Unlocked:</div>
+            <div class="small text-dark">
+              <div><strong>Finder Name:</strong> {{ claim.finder_name }}</div>
+              <div><strong>Email:</strong> <a href="mailto:{{ claim.finder_email }}">{{ claim.finder_email }}</a></div>
+              {% if claim.finder_phone %}
+              <div><strong>Phone:</strong> <a href="tel:{{ claim.finder_phone }}">{{ claim.finder_phone }}</a></div>
+              {% endif %}
+              {% if claim.review_notes %}
+              <div class="mt-1 pt-1 border-top border-success-subtle"><strong>Finder Note:</strong> {{ claim.review_notes }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% elif claim.status == 'Rejected' and claim.review_notes %}
+          <div class="p-3 bg-danger-subtle rounded-3 border border-danger mb-3 small text-danger">
+            <strong>Reviewer Note:</strong> {{ claim.review_notes }}
+          </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-2 text-muted small">
+            <span>Submitted {{ claim.created_at|timeago }}</span>
+            <a href="{{ url_for('items.view_found', item_id=claim.found_item_id) }}" class="btn btn-sm btn-outline-secondary">
+              View Item Report
+            </a>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="bi bi-clipboard-check"></i></div>
+      <h5 class="fw-bold">No claims submitted yet</h5>
+      <p class="text-muted small">When you identify an item you own in the catalog or matches, you can submit an ownership claim.</p>
+      <a href="{{ url_for('items.browse') }}" class="btn btn-primary-fb btn-sm">Browse Items</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

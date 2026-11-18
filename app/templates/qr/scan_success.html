@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Message Sent! — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 text-center">
+      <div class="card card-custom p-5 bg-white border shadow-md">
+        <div class="text-success mb-3">
+          <i class="bi bi-check-circle-fill" style="font-size: 4rem;"></i>
+        </div>
+        <h2 class="fw-bold text-dark mb-2">Thank You, Good Samaritan!</h2>
+        <p class="lead text-muted mb-4">
+          Your recovery message has been transmitted securely to the owner of <strong>{{ qr_item.item_name }}</strong>.
+        </p>
+        <p class="text-muted small mb-4">
+          The owner has received an instant notification with your contact information to arrange a convenient handover.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{{ url_for('items.index') }}" class="btn btn-primary-fb px-4">Return to FindBack Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

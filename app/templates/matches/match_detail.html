@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}Match Analysis #{{ match.id }} — FindBack{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="{{ url_for('matches.view_matches') }}" class="text-muted small text-decoration-none">
+          <i class="bi bi-arrow-left"></i> Back to all matches
+        </a>
+        <span class="text-muted small">&bull;</span>
+        <span class="badge bg-light text-muted border">ID #{{ match.id }}</span>
+      </div>
+      <h2 class="fw-bold mb-0">Cross-Item Match Analysis</h2>
+    </div>
+
+    <!-- Match Overall Score Badge -->
+    <div>
+      {% if match.total_score >= 70 %}
+        <span class="match-score-badge score-high fs-5">
+          <i class="bi bi-patch-check-fill"></i> {{ match.total_score }}% Match
+        </span>
+      {% elif match.total_score >= 50 %}
+        <span class="match-score-badge score-medium fs-5">
+          <i class="bi bi-stars"></i> {{ match.total_score }}% Match
+        </span>
+      {% else %}
+        <span class="match-score-badge score-low fs-5">
+          <i class="bi bi-shield"></i> {{ match.total_score }}% Match
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 4-PART ALGORITHM SCORE BREAKDOWN CARD -->
+  <div class="card card-custom p-4 border bg-white shadow-sm mb-4">
+    <h5 class="fw-bold text-dark mb-3"><i class="bi bi-calculator me-1 text-primary"></i> Algorithm Weight Breakdown</h5>
+    
+    <div class="row g-4">
+      <!-- Description Score (50%) -->
+      <div class="col-md-3">
+        <div class="p-3 bg-light rounded-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold small text-dark">Description NLP</span>
+            <span class="badge bg-primary-subtle text-primary fw-bold">{{ match.description_score }}%</span>
+          </div>
+          <div class="progress mb-2" style="height: 6px;">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ match.description_score }}%;"></div>
+          </div>
+          <div class="text-muted small" style="font-size: 0.75rem;">Weight: 50% &bull; Contributes {{ (match.description_score * 0.50)|round(1) }} pts</div>
+        </div>
+      </div>
+
+      <!-- Category Score (20%) -->
+      <div class="col-md-3">
+        <div class="p-3 bg-light rounded-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold small text-dark">Category Match</span>
+            <span class="badge bg-success-subtle text-success fw-bold">{{ match.category_score }}%</span>
+          </div>
+          <div class="progress mb-2" style="height: 6px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ match.category_score }}%;"></div>
+          </div>
+          <div class="text-muted small" style="font-size: 0.75rem;">Weight: 20% &bull; Contributes {{ (match.category_score * 0.20)|round(1) }} pts</div>
+        </div>
+      </div>
+
+      <!-- Location Score (20%) -->
+      <div class="col-md-3">
+        <div class="p-3 bg-light rounded-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold small text-dark">Location Context</span>
+            <span class="badge bg-warning-subtle text-warning fw-bold">{{ match.location_score }}%</span>
+          </div>
+          <div class="progress mb-2" style="height: 6px;">
+            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ match.location_score }}%;"></div>
+          </div>
+          <div class="text-muted small" style="font-size: 0.75rem;">Weight: 20% &bull; Contributes {{ (match.location_score * 0.20)|round(1) }} pts</div>
+        </div>
+      </div>
+
+      <!-- Date Score (10%) -->
+      <div class="col-md-3">
+        <div class="p-3 bg-light rounded-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold small text-dark">Date Closeness</span>
+            <span class="badge bg-info-subtle text-info fw-bold">{{ match.date_score }}%</span>
+          </div>
+          <div class="progress mb-2" style="height: 6px;">
+            <div class="progress-bar bg-info" role="progressbar" style="width: {{ match.date_score }}%;"></div>
+          </div>
+          <div class="text-muted small" style="font-size: 0.75rem;">Weight: 10% &bull; Contributes {{ (match.date_score * 0.10)|round(1) }} pts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Match Reasons Banner -->
+    <div class="mt-3 p-3 bg-primary-subtle rounded-3 small text-dark">
+      <i class="bi bi-info-circle-fill text-primary me-1"></i>
+      <strong>Algorithm Verdict:</strong> {{ match.match_reasons }}
+    </div>
+  </div>
+
+  <!-- SIDE-BY-SIDE REPORT COMPARISON -->
+  <div class="row g-4 mb-4">
+    <!-- Lost Item Details -->
+    <div class="col-lg-6">
+      <div class="card card-custom p-4 border-danger bg-white shadow-sm h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <span class="badge bg-danger text-white"><i class="bi bi-exclamation-triangle me-1"></i>Reported Lost Item</span>
+          <a href="{{ url_for('items.view_lost', item_id=match.lost_item_id) }}" class="small text-muted text-decoration-none">View full lost report &rarr;</a>
+        </div>
+
+        {% if match.lost_photo %}
+        <div class="rounded-3 overflow-hidden bg-light text-center border p-2 mb-3" style="height: 180px;">
+          <img src="{{ url_for('items.serve_upload', subfolder='items', filename=match.lost_photo) }}" alt="{{ match.lost_name }}" class="h-100 object-fit-contain">
+        </div>
+        {% endif %}
+
+        <h4 class="fw-bold text-dark mb-3">{{ match.lost_name }}</h4>
+
+        <div class="row g-2 mb-3 small">
+          <div class="col-6">
+            <span class="text-muted d-block">Category:</span>
+            <span class="fw-semibold">{{ match.lost_category }}</span>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Colour:</span>
+            <span class="fw-semibold">{{ match.lost_color }}</span>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Brand:</span>
+            <span class="fw-semibold">{{ match.lost_brand or 'Not specified' }}</span>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Date Lost:</span>
+            <span class="fw-semibold"><i class="bi bi-calendar3 me-1"></i>{{ match.date_lost }}</span>
+          </div>
+          <div class="col-12">
+            <span class="text-muted d-block">Last Seen Location:</span>
+            <span class="fw-semibold"><i class="bi bi-geo-alt text-danger me-1"></i>{{ match.last_seen_location }}</span>
+          </div>
+        </div>
+
+        <div>
+          <span class="text-muted small d-block mb-1">Owner's Description:</span>
+          <div class="p-3 bg-light rounded-3 text-dark small lh-base">
+            {{ match.lost_desc }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Found Item Details -->
+    <div class="col-lg-6">
+      <div class="card card-custom p-4 border-success bg-white shadow-sm h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+          <span class="badge bg-success text-white"><i class="bi bi-box-seam me-1"></i>Reported Found Item</span>
+          <a href="{{ url_for('items.view_found', item_id=match.found_item_id) }}" class="small text-muted text-decoration-none">View full found report &rarr;</a>
+        </div>
+
+        {% if match.found_photo %}
+        <div class="rounded-3 overflow-hidden bg-light text-center border p-2 mb-3" style="height: 180px;">
+          <img src="{{ url_for('items.serve_upload', subfolder='items', filename=match.found_photo) }}" alt="{{ match.found_name }}" class="h-100 object-fit-contain">
+        </div>
+        {% endif %}
+
+        <h4 class="fw-bold text-dark mb-3">{{ match.found_name }}</h4>
+
+        <div class="row g-2 mb-3 small">
+          <div class="col-6">
+            <span class="text-muted d-block">Category:</span>
+            <span class="fw-semibold">{{ match.found_category }}</span>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Colour:</span>
+            <span class="fw-semibold">{{ match.found_color }}</span>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Brand:</span>
+            <span class="fw-semibold">{{ match.found_brand or 'Not specified' }}</span>
+          </div>
+          <div class="col-6">
+            <span class="text-muted d-block">Date Found:</span>
+            <span class="fw-semibold"><i class="bi bi-calendar3 me-1"></i>{{ match.date_found }}</span>
+          </div>
+          <div class="col-12">
+            <span class="text-muted d-block">Location Found:</span>
+            <span class="fw-semibold"><i class="bi bi-geo-alt text-success me-1"></i>{{ match.found_location }}</span>
+          </div>
+        </div>
+
+        <div>
+          <span class="text-muted small d-block mb-1">Public Description:</span>
+          <div class="p-3 bg-light rounded-3 text-dark small lh-base">
+            {{ match.found_desc }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION / CLAIM SUBMISSION BAR -->
+  <div class="card card-custom p-4 bg-dark text-white border-0 shadow-lg">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+      <div>
+        <h5 class="fw-bold text-white mb-1">Next Action Step</h5>
+        <p class="text-light opacity-75 small mb-0">
+          Does this found item match your lost belonging? Initiate the secure ownership claim to verify your distinguishing proof.
+        </p>
+      </div>
+
+      <div>
+        {% if existing_claim %}
+          <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+            <i class="bi bi-clock-history me-1"></i> Claim Status: {{ existing_claim.status }}
+          </span>
+        {% elif current_user_id == match.lost_user_id %}
+          <a href="{{ url_for('claims.submit_claim', found_id=match.found_item_id) }}" class="btn btn-primary-fb btn-lg px-4">
+            <i class="bi bi-shield-check me-1"></i> Submit Ownership Claim
+          </a>
+        {% elif current_user_id == match.found_user_id %}
+          <span class="badge bg-success-subtle text-success px-3 py-2 fs-6">
+            You are the Finder of this item
+          </span>
+        {% else %}
+          <a href="{{ url_for('claims.submit_claim', found_id=match.found_item_id) }}" class="btn btn-primary-fb px-4">
+            Submit Claim
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
